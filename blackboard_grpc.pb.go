@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.24.0
-// source: proto/blackboard.proto
+// source: blackboard.proto
 
 package blackboard
 
@@ -22,6 +22,7 @@ const (
 	BlackboardService_WriteMessage_FullMethodName = "/blackboard.BlackboardService/WriteMessage"
 	BlackboardService_ReadMessages_FullMethodName = "/blackboard.BlackboardService/ReadMessages"
 	BlackboardService_ReadMessage_FullMethodName  = "/blackboard.BlackboardService/ReadMessage"
+	BlackboardService_GetStatus_FullMethodName    = "/blackboard.BlackboardService/GetStatus"
 )
 
 // BlackboardServiceClient is the client API for BlackboardService service.
@@ -31,6 +32,7 @@ type BlackboardServiceClient interface {
 	WriteMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*WriteResponse, error)
 	ReadMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (BlackboardService_ReadMessagesClient, error)
 	ReadMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
+	GetStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StatusMessage, error)
 }
 
 type blackboardServiceClient struct {
@@ -91,6 +93,15 @@ func (c *blackboardServiceClient) ReadMessage(ctx context.Context, in *Message, 
 	return out, nil
 }
 
+func (c *blackboardServiceClient) GetStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StatusMessage, error) {
+	out := new(StatusMessage)
+	err := c.cc.Invoke(ctx, BlackboardService_GetStatus_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BlackboardServiceServer is the server API for BlackboardService service.
 // All implementations must embed UnimplementedBlackboardServiceServer
 // for forward compatibility
@@ -98,6 +109,7 @@ type BlackboardServiceServer interface {
 	WriteMessage(context.Context, *Message) (*WriteResponse, error)
 	ReadMessages(*Empty, BlackboardService_ReadMessagesServer) error
 	ReadMessage(context.Context, *Message) (*Message, error)
+	GetStatus(context.Context, *Empty) (*StatusMessage, error)
 	mustEmbedUnimplementedBlackboardServiceServer()
 }
 
@@ -113,6 +125,9 @@ func (UnimplementedBlackboardServiceServer) ReadMessages(*Empty, BlackboardServi
 }
 func (UnimplementedBlackboardServiceServer) ReadMessage(context.Context, *Message) (*Message, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ReadMessage not implemented")
+}
+func (UnimplementedBlackboardServiceServer) GetStatus(context.Context, *Empty) (*StatusMessage, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetStatus not implemented")
 }
 func (UnimplementedBlackboardServiceServer) mustEmbedUnimplementedBlackboardServiceServer() {}
 
@@ -184,6 +199,24 @@ func _BlackboardService_ReadMessage_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BlackboardService_GetStatus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlackboardServiceServer).GetStatus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BlackboardService_GetStatus_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlackboardServiceServer).GetStatus(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BlackboardService_ServiceDesc is the grpc.ServiceDesc for BlackboardService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -199,6 +232,10 @@ var BlackboardService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ReadMessage",
 			Handler:    _BlackboardService_ReadMessage_Handler,
 		},
+		{
+			MethodName: "GetStatus",
+			Handler:    _BlackboardService_GetStatus_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -207,5 +244,5 @@ var BlackboardService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "proto/blackboard.proto",
+	Metadata: "blackboard.proto",
 }
