@@ -23,6 +23,7 @@ const (
 	BlackboardService_ReadMessages_FullMethodName = "/blackboard.BlackboardService/ReadMessages"
 	BlackboardService_ReadMessage_FullMethodName  = "/blackboard.BlackboardService/ReadMessage"
 	BlackboardService_GetStatus_FullMethodName    = "/blackboard.BlackboardService/GetStatus"
+	BlackboardService_UpdateConfig_FullMethodName = "/blackboard.BlackboardService/UpdateConfig"
 )
 
 // BlackboardServiceClient is the client API for BlackboardService service.
@@ -33,6 +34,7 @@ type BlackboardServiceClient interface {
 	ReadMessages(ctx context.Context, in *Empty, opts ...grpc.CallOption) (BlackboardService_ReadMessagesClient, error)
 	ReadMessage(ctx context.Context, in *Message, opts ...grpc.CallOption) (*Message, error)
 	GetStatus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*StatusMessage, error)
+	UpdateConfig(ctx context.Context, in *ConfigMessage, opts ...grpc.CallOption) (*WriteResponse, error)
 }
 
 type blackboardServiceClient struct {
@@ -102,6 +104,15 @@ func (c *blackboardServiceClient) GetStatus(ctx context.Context, in *Empty, opts
 	return out, nil
 }
 
+func (c *blackboardServiceClient) UpdateConfig(ctx context.Context, in *ConfigMessage, opts ...grpc.CallOption) (*WriteResponse, error) {
+	out := new(WriteResponse)
+	err := c.cc.Invoke(ctx, BlackboardService_UpdateConfig_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // BlackboardServiceServer is the server API for BlackboardService service.
 // All implementations must embed UnimplementedBlackboardServiceServer
 // for forward compatibility
@@ -110,6 +121,7 @@ type BlackboardServiceServer interface {
 	ReadMessages(*Empty, BlackboardService_ReadMessagesServer) error
 	ReadMessage(context.Context, *Message) (*Message, error)
 	GetStatus(context.Context, *Empty) (*StatusMessage, error)
+	UpdateConfig(context.Context, *ConfigMessage) (*WriteResponse, error)
 	mustEmbedUnimplementedBlackboardServiceServer()
 }
 
@@ -128,6 +140,9 @@ func (UnimplementedBlackboardServiceServer) ReadMessage(context.Context, *Messag
 }
 func (UnimplementedBlackboardServiceServer) GetStatus(context.Context, *Empty) (*StatusMessage, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetStatus not implemented")
+}
+func (UnimplementedBlackboardServiceServer) UpdateConfig(context.Context, *ConfigMessage) (*WriteResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateConfig not implemented")
 }
 func (UnimplementedBlackboardServiceServer) mustEmbedUnimplementedBlackboardServiceServer() {}
 
@@ -217,6 +232,24 @@ func _BlackboardService_GetStatus_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _BlackboardService_UpdateConfig_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfigMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BlackboardServiceServer).UpdateConfig(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: BlackboardService_UpdateConfig_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BlackboardServiceServer).UpdateConfig(ctx, req.(*ConfigMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // BlackboardService_ServiceDesc is the grpc.ServiceDesc for BlackboardService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -235,6 +268,10 @@ var BlackboardService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetStatus",
 			Handler:    _BlackboardService_GetStatus_Handler,
+		},
+		{
+			MethodName: "UpdateConfig",
+			Handler:    _BlackboardService_UpdateConfig_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
